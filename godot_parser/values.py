@@ -24,18 +24,27 @@ boolean = (
 
 null = Keyword("null").set_parse_action(lambda _: [None])
 
-
 primitive = (
-    null | QuotedString('"', escChar="\\", multiline=True) | boolean | common.number
+        null | QuotedString('"', escChar="\\", multiline=True) | boolean | common.number
 )
 value = Forward()
 
+ttype = Forward()
+
+rec_ttype = Group(
+    Word(alphas, alphanums)
+    + Opt(Suppress("[") + ttype + Suppress("]"))
+).set_results_name("subtype")
+
+ttype <<= rec_ttype
+
 # Vector2( 1, 2 )
 obj_type = (
-    Word(alphas, alphanums).set_results_name("object_name")
-    + Suppress("(")
-    + DelimitedList(value)
-    + Suppress(")")
+        Word(alphas, alphanums).set_results_name("object_name")
+        + Opt(Suppress("[") + ttype + Suppress("]"))
+        + Suppress("(")
+        + DelimitedList(value)
+        + Suppress(")")
 ).set_parse_action(GDObject.from_parser)
 
 # [ 1, 2 ] or [ 1, 2, ]

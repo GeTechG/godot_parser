@@ -34,7 +34,6 @@ class GDObjectMeta(type):
 
 GDObjectType = TypeVar("GDObjectType", bound="GDObject")
 
-
 class GDObject(metaclass=GDObjectMeta):
     """
     Base class for all GD Object types
@@ -46,11 +45,14 @@ class GDObject(metaclass=GDObjectMeta):
 
     def __init__(self, name, *args) -> None:
         self.name = name
+        self.subtype = None
         self.args = list(args)
 
     @classmethod
     def from_parser(cls: Type[GDObjectType], parse_result) -> GDObjectType:
         name = parse_result[0]
+        if "subtype" in parse_result:
+            subtype = parse_result["subtype"][0]
         factory = GD_OBJECT_REGISTRY.get(name, partial(GDObject, name))
         return factory(*parse_result[1:])
 
